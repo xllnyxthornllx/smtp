@@ -1,129 +1,111 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const terminalInput = document.getElementById('terminal-input');
-    const terminalOutput = document.getElementById('terminal-output');
-    const packet = document.getElementById('data-packet');
-    const protocolDesc = document.getElementById('protocol-description');
-    const muaState = document.getElementById('mua-state');
-    const mtaState = document.getElementById('mta-state');
-    const connDot = document.getElementById('connection-dot');
-    const connStatus = document.getElementById('connection-status');
+    const termIn = document.getElementById('term-in');
+    const termOut = document.getElementById('term-out');
+    const packet = document.getElementById('main-packet');
+    const stStatus = document.getElementById('st-status');
+    const stFrom = document.getElementById('st-from');
+    const stTo = document.getElementById('st-to');
+    const stMail = document.getElementById('st-mail-content');
 
-    let smtpState = 'INIT';
+    let state = 'INIT';
+    let dataLines = [];
 
-    const techInfo = {
-        'INIT': 'Esperando inicio de sesión. El cliente debe identificarse con el comando <strong>HELO</strong> o <strong>EHLO</strong>.',
-        'HELO': 'Handshake completado. La conexión está establecida. Ahora el cliente debe especificar el remitente con <strong>MAIL FROM:</strong>.',
-        'MAIL': 'Remitente aceptado por el MTA. El sistema espera el destinatario con el comando <strong>RCPT TO:</strong>.',
-        'RCPT': 'Destinatario verificado. El servidor está listo para recibir el cuerpo del mensaje. Use el comando <strong>DATA</strong>.',
-        'DATA_START': 'Modo de transferencia de datos activo. Escriba el mensaje y termine con un punto <strong>(.)</strong> en una línea sola.',
-        'DATA_END': 'Mensaje encolado (Queued). El ciclo de envío ha terminado con éxito.',
-        'QUIT': 'Cerrando conexión TCP. El canal de comunicación se libera.'
+    // Funciones globales para los botones de la guía
+    window.copyCmd = (cmd) => {
+        termIn.value = cmd;
+        termIn.focus();
     };
 
-    const serverResponses = {
-        'HELO': '250 smtp.tecnico.edu.pe Hello client.network.local',
-        'MAIL FROM': '250 2.1.0 Sender OK',
-        'RCPT TO': '250 2.1.5 Recipient OK',
-        'DATA': '354 End data with <CR><LF>.<CR><LF>',
-        'QUIT': '221 2.0.0 Service closing transmission channel'
+    window.copyDataBlock = () => {
+        const block = "Subject: Entrega de Laboratorio - Protocolos de Aplicación\nHola, profesor. \nAdjunto mi simulación del protocolo SMTP para la clase de Redes.\nAtentamente, \nUriel Torres.\n.";
+        termIn.value = block;
+        termIn.focus();
     };
 
-    terminalInput.addEventListener('keypress', (e) => {
+    termIn.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-            const cmd = terminalInput.value.trim();
-            if (cmd) processCommand(cmd);
-            terminalInput.value = '';
+            const val = termIn.value; // No trim here to allow multi-line paste processing
+            if (val) processCommand(val);
+            termIn.value = '';
         }
     });
 
-    function animatePacket(direction, callback) {
-        packet.classList.remove('animate-send', 'animate-receive');
-        void packet.offsetWidth; // Trigger reflow
-        packet.classList.add(direction === 'to-server' ? 'animate-send' : 'animate-receive');
-        if (callback) setTimeout(callback, 800);
+    function addLog(txt, cls = '') {
+        const div = document.createElement('div');
+        div.className = `line ${cls}`;
+        div.textContent = txt;
+        termOut.appendChild(div);
+        termOut.scrollTop = termOut.scrollHeight;
     }
 
-    function addLine(text, type = 'user') {
-        const line = document.createElement('div');
-        line.className = `line ${type === 'user' ? 'user-input' : 'response'}`;
-        line.textContent = (type === 'user' ? '> ' : '') + text;
-        terminalOutput.appendChild(line);
-        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+    function animatePacket(callback) {
+        packet.classList.remove('anim-p');
+        void packet.offsetWidth;
+        packet.classList.add('anim-p');
+        setTimeout(callback, 600);
     }
 
-    function updateVisuals(state, descKey) {
-        smtpState = state;
-        protocolDesc.innerHTML = techInfo[descKey || state];
+    function processCommand(input) {
+        // Soporte para múltiples líneas pegadas (Bloque de Datos)
+        const commands = input.split('\n');
         
-        // Update statuses
-        if (state !== 'INIT' && state !== 'QUIT') {
-            connDot.classList.add('online');
-            connStatus.textContent = 'ESTABLISHED (TCP 25)';
-            mtaState.textContent = 'BUSY';
-            mtaState.style.color = 'var(--primary)';
-        } else {
-            connDot.classList.remove('online');
-            connStatus.textContent = 'DISCONNECTED';
-            mtaState.textContent = 'LISTENING';
-            mtaState.style.color = 'inherit';
-        }
-    }
+        commands.forEach((cmd, index) => {
+            if (cmd === "" && index > 0) return; // Skip empty trailing line from split
 
-    function processCommand(cmd) {
-        const upper = cmd.toUpperCase();
-        addLine(cmd, 'user');
-        
-        // Phase 1: Client sends command
-        muaState.textContent = 'SENDING...';
-        animatePacket('to-server', () => {
-            muaState.textContent = 'AWAITING ACK';
-            
-            // Phase 2: Server processes and responds
             setTimeout(() => {
-                let response = '500 5.5.1 Command unrecognized';
-                let valid = false;
-
-                if (smtpState === 'DATA') {
-                    if (cmd === '.') {
-                        response = '250 2.0.0 Ok: queued as 7F321';
-                        updateVisuals('HELO', 'DATA_END');
-                        valid = true;
-                    } else {
-                        return; // Silent during DATA input
-                    }
-                } else if (upper.startsWith('HELO') || upper.startsWith('EHLO')) {
-                    response = serverResponses['HELO'];
-                    updateVisuals('HELO');
-                    valid = true;
-                } else if (upper.startsWith('MAIL FROM:')) {
-                    if (smtpState === 'HELO') {
-                        response = serverResponses['MAIL FROM'];
-                        updateVisuals('MAIL');
-                        valid = true;
-                    } else response = '503 5.5.1 Error: send HELO/EHLO first';
-                } else if (upper.startsWith('RCPT TO:')) {
-                    if (smtpState === 'MAIL' || smtpState === 'RCPT') {
-                        response = serverResponses['RCPT TO'];
-                        updateVisuals('RCPT');
-                        valid = true;
-                    } else response = '503 5.5.1 Error: need MAIL command';
-                } else if (upper === 'DATA') {
-                    if (smtpState === 'RCPT') {
-                        response = serverResponses['DATA'];
-                        updateVisuals('DATA', 'DATA_START');
-                        valid = true;
-                    } else response = '503 5.5.1 Error: need RCPT command';
-                } else if (upper === 'QUIT') {
-                    response = serverResponses['QUIT'];
-                    updateVisuals('INIT', 'QUIT');
-                    valid = true;
+                const upper = cmd.trim().toUpperCase();
+                
+                // Si estamos en DATA_MODE, no animamos paquete cada vez, solo guardamos
+                if (state === 'DATA_MODE' && cmd.trim() !== '.') {
+                    addLog(`> ${cmd}`, 'txt-white');
+                    dataLines.push(cmd);
+                    stMail.innerHTML = dataLines.join('<br>');
+                    return;
                 }
 
-                animatePacket('to-client', () => {
-                    addLine(response, 'server');
-                    muaState.textContent = valid ? 'CONNECTED' : 'IDLE';
+                addLog(`> ${cmd}`, 'txt-white');
+
+                animatePacket(() => {
+                    let response = '500 5.5.1 Command unrecognized';
+                    
+                    if (state === 'DATA_MODE' && cmd.trim() === '.') {
+                        response = '250 2.0.0 Ok: queued as 7F421C';
+                        state = 'QUEUED';
+                        stStatus.textContent = 'DELIVERED';
+                        document.getElementById('node-mda').style.boxShadow = '0 0 20px #10b981';
+                    } else if (upper.startsWith('HELO') || upper.startsWith('EHLO')) {
+                        response = '250 smtp.tecsup.edu.pe Hello tecsup.edu.pe [192.168.10.45]';
+                        state = 'CONNECTED';
+                        stStatus.textContent = 'CONNECTED';
+                    } else if (upper.startsWith('MAIL FROM:')) {
+                        const email = cmd.match(/<(.+)>/);
+                        stFrom.textContent = email ? email[1] : 'Invalid';
+                        response = '250 2.1.0 Ok';
+                        state = 'SENDER_SET';
+                    } else if (upper.startsWith('RCPT TO:')) {
+                        const email = cmd.match(/<(.+)>/);
+                        stTo.textContent = email ? email[1] : 'Invalid';
+                        response = '250 2.1.5 Ok';
+                        state = 'RCPT_SET';
+                    } else if (upper === 'DATA') {
+                        response = '354 End data with <CR><LF>.<CR><LF>';
+                        state = 'DATA_MODE';
+                        stStatus.textContent = 'RECEIVING_DATA';
+                        stMail.textContent = '';
+                        dataLines = [];
+                    } else if (upper === 'QUIT') {
+                        response = '221 2.0.0 Bye';
+                        state = 'INIT';
+                        stStatus.textContent = 'IDLE';
+                        stFrom.textContent = '-';
+                        stTo.textContent = '-';
+                        stMail.textContent = 'Esperando DATA...';
+                        document.getElementById('node-mda').style.boxShadow = 'none';
+                    }
+
+                    addLog(response, 'txt-green');
                 });
-            }, 400);
+            }, index * 400); // Retraso reducido para bloques grandes
         });
     }
 });

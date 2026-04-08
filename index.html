@@ -3,85 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protocolo SMTP: Diagrama de Flujo Interactivo</title>
+    <title>SMTP Simulator - Tecsup Edition</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header class="main-header">
-        <div class="container">
-            <div class="status-indicator">
-                <span class="dot" id="connection-dot"></span> <span id="connection-status">DISCONNECTED</span>
-            </div>
-            <h1>Arquitectura y Flujo SMTP</h1>
-            <p class="subtitle">Simulación de transferencia de correo entre Agentes (MUA -> MTA)</p>
-        </div>
-    </header>
-
-    <main class="container">
-        <!-- DIAGRAMA VISUAL -->
-        <section class="diagram-section">
-            <div class="network-topology">
-                <!-- CLIENTE MUA -->
-                <div class="node-container" id="node-mua">
-                    <div class="node-icon">💻</div>
-                    <div class="node-label">Cliente (MUA)</div>
-                    <div class="node-ip">192.168.1.10</div>
-                    <div class="state-indicator" id="mua-state">IDLE</div>
+    <div class="app-wrapper">
+        <!-- PANEL LATERAL: COMANDOS RÁPIDOS (COPY-PASTE) -->
+        <aside class="guide-sidebar">
+            <div class="guide-header">📋 Comandos para la Clase</div>
+            <div class="guide-content">
+                <p class="guide-intro">Haz clic en cada paso para copiarlo a la terminal:</p>
+                
+                <div class="step-box" onclick="copyCmd('HELO tecsup.edu.pe')">
+                    <span class="step-num">1</span>
+                    <strong>HELO tecsup.edu.pe</strong>
+                    <p>Identificación inicial del cliente.</p>
                 </div>
 
-                <!-- CANAL DE COMUNICACIÓN -->
-                <div class="bus-channel">
-                    <div class="packet" id="data-packet"></div>
-                    <div class="connection-line"></div>
+                <div class="step-box" onclick="copyCmd('MAIL FROM:<uriel.torres@tecsup.edu.pe>')">
+                    <span class="step-num">2</span>
+                    <strong>MAIL FROM:&lt;uriel.torres@...&gt;</strong>
+                    <p>Especifica el remitente (Uriel).</p>
                 </div>
 
-                <!-- SERVIDOR MTA -->
-                <div class="node-container" id="node-mta">
-                    <div class="node-icon">🖥️</div>
-                    <div class="node-label">Servidor (MTA)</div>
-                    <div class="node-ip">smtp.tecnico.edu.pe:25</div>
-                    <div class="state-indicator" id="mta-state">LISTENING</div>
+                <div class="step-box" onclick="copyCmd('RCPT TO:<profesor@tecsup.edu.pe>')">
+                    <span class="step-num">3</span>
+                    <strong>RCPT TO:&lt;profesor@tecsup...&gt;</strong>
+                    <p>Especifica el destinatario final.</p>
                 </div>
-            </div>
 
-            <!-- EXPLICACIÓN TÉCNICA DINÁMICA -->
-            <div class="tech-info-panel">
-                <div class="info-header">Estado del Protocolo (RFC 5321)</div>
-                <div class="info-body" id="protocol-description">
-                    Esperando inicio de sesión. Utilice el comando <strong>HELO</strong> para iniciar el handshake.
+                <div class="step-box" onclick="copyCmd('DATA')">
+                    <span class="step-num">4</span>
+                    <strong>DATA</strong>
+                    <p>Prepara al servidor para recibir el contenido.</p>
                 </div>
-            </div>
-        </section>
 
-        <!-- TERMINAL DE COMANDOS -->
-        <section class="terminal-section">
-            <div class="terminal-container">
-                <div class="terminal-header">
-                    <div class="controls"><span class="close"></span><span class="minimize"></span><span class="expand"></span></div>
-                    <div class="terminal-title">telnet smtp.tecnico.edu.pe 25</div>
+                <div class="step-box highlight" onclick="copyDataBlock()">
+                    <span class="step-num">5</span>
+                    <strong>Bloque de Contenido</strong>
+                    <p>Copia el asunto, cuerpo y el punto final (.).</p>
                 </div>
-                <div class="terminal-body" id="terminal-output">
-                    <div class="line server">Connected to smtp.tecnico.edu.pe.</div>
-                    <div class="line server">Escape character is '^]'.</div>
-                    <div class="line server">220 smtp.tecnico.edu.pe ESMTP Postfix</div>
-                </div>
-                <div class="terminal-input-area">
-                    <span class="prompt-char">></span>
-                    <input type="text" id="terminal-input" placeholder="Escriba HELO para empezar..." autocomplete="off" autofocus>
+
+                <div class="step-box" onclick="copyCmd('QUIT')">
+                    <span class="step-num">6</span>
+                    <strong>QUIT</strong>
+                    <p>Cierra la sesión de forma segura.</p>
                 </div>
             </div>
-            <div class="help-hint">
-                <strong>Comandos:</strong> HELO, MAIL FROM: &lt;user&gt;, RCPT TO: &lt;user&gt;, DATA, QUIT
-            </div>
-        </section>
-    </main>
+        </aside>
 
-    <footer class="main-footer">
-        <p>Demostración Técnica para Presentación Universitaria - Protocolo de Capa de Aplicación</p>
-    </footer>
+        <!-- ÁREA PRINCIPAL -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="brand">TECSUP<span>.SMTP</span></div>
+                <div class="live-status"><span class="pulse"></span> SISTEMA OPERATIVO - Ubuntu 22.04 LTS</div>
+            </header>
+
+            <!-- MAPA DE RED ACTUALIZADO -->
+            <section class="network-map">
+                <div class="node" id="node-mua">
+                    <div class="icon">💻</div>
+                    <div class="label">MUA (Uriel)</div>
+                    <div class="sub">192.168.10.45</div>
+                </div>
+
+                <div class="path-container">
+                    <div class="path-line"></div>
+                    <div class="packet" id="main-packet"></div>
+                </div>
+
+                <div class="node" id="node-mta-src">
+                    <div class="icon">🗄️</div> <!-- Icono de Servidor Rack -->
+                    <div class="label">smtp.tecsup.edu.pe</div>
+                    <div class="sub">MTA Origen (Postfix)</div>
+                </div>
+
+                <div class="path-container">
+                    <div class="path-line"></div>
+                </div>
+
+                <div class="node" id="node-mda">
+                    <div class="icon">📧</div>
+                    <div class="label">MDA Destino</div>
+                    <div class="sub">Buzón Profesor</div>
+                </div>
+            </section>
+
+            <!-- CONSOLA Y MONITOR -->
+            <div class="console-grid">
+                <div class="terminal-box">
+                    <div class="terminal-header">Terminal de Red - Puerto 25</div>
+                    <div class="terminal-body" id="term-out">
+                        <div class="txt-gray">Estableciendo conexión con smtp.tecsup.edu.pe...</div>
+                        <div class="txt-green">220 smtp.tecsup.edu.pe ESMTP Postfix (Ubuntu)</div>
+                    </div>
+                    <div class="terminal-input-wrap">
+                        <span class="prompt">$</span>
+                        <input type="text" id="term-in" placeholder="Escribe un comando..." autofocus autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="monitor-box">
+                    <div class="monitor-header">Análisis de Protocolo</div>
+                    <div class="monitor-body">
+                        <div class="stat-row"><span>Dominio:</span> <span class="val">tecsup.edu.pe</span></div>
+                        <div class="stat-row"><span>Estado:</span> <span class="val" id="st-status">IDLE</span></div>
+                        <div class="stat-row"><span>Remitente:</span> <span class="val" id="st-from">-</span></div>
+                        <div class="stat-row"><span>Destino:</span> <span class="val" id="st-to">-</span></div>
+                        <hr>
+                        <div class="mail-preview">
+                            <div class="preview-label">Buffer de Datos (Cuerpo):</div>
+                            <div id="st-mail-content" class="txt-muted">Esperando DATA...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <script src="script.js"></script>
 </body>
