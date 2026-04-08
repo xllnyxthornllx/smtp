@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEMANA 4: Servicio de Correo (SMTP) - Universidad Técnica</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <div class="status-indicator">
+                <span class="dot"></span> ONLINE
+            </div>
+            <h1>SEMANA 4: Servicio de Correo</h1>
+            <p class="subtitle">Subencabezado del módulo de contexto - Arquitectura de Redes</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- SECCIÓN ANTES -->
+        <section class="module-section" id="antes">
+            <div class="section-tag">Fase 1</div>
+            <h2>Antes: Preparación</h2>
+            <div class="card video-card">
+                <div class="card-header">
+                    <span class="icon">🎬</span> _Vídeo: ¿Qué es SMTP?
+                </div>
+                <div class="video-placeholder">
+                    <div class="play-button"></div>
+                    <p>Haga clic para cargar el Vídeo: ¿Qué es SMTP?</p>
+                </div>
+                <div class="card-content">
+                    <p>En esta sesión previa, exploraremos los fundamentos del protocolo SMTP (Simple Mail Transfer Protocol) y su papel crítico en la transferencia de mensajes entre servidores (MTA).</p>
+                    <ul class="tag-list">
+                        <li>Protocolo: SMTP</li>
+                        <li>Puertos: 25, 465, 587</li>
+                        <li>RFC: 5321</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN DURANTE -->
+        <section class="module-section" id="durante">
+            <div class="section-tag">Fase 2</div>
+            <h2>Durante: Teoría y Laboratorio</h2>
+            
+            <div class="grid">
+                <div class="card theory-card">
+                    <div class="card-header">
+                        <span class="icon">📄</span> Teoría: Servicio eMail
+                    </div>
+                    <div class="card-content">
+                        <h3>MTEO-S04-LDIAZ-2025-02</h3>
+                        <p>Análisis exhaustivo de los componentes de red: MUA, MTA, MDA y el flujo de comunicación entre ellos.</p>
+                        <a href="#" class="btn secondary">Descargar Teoría PDF</a>
+                    </div>
+                </div>
+
+                <div class="card lab-card highlighted">
+                    <div class="card-header">
+                        <span class="icon">💻</span> Laboratorio en Linux
+                    </div>
+                    <div class="card-content">
+                        <h3>PLAB-S04-LDIAZ-2026-01</h3>
+                        <div class="task-info">
+                            <span class="date">📅 16 de abr</span>
+                            <span class="points">⭐ 20 pts</span>
+                        </div>
+                        <p>Configuración y despliegue de un servidor de correo local utilizando Postfix sobre sistemas operativos Linux (Debian/Ubuntu).</p>
+                        <a href="#" class="btn primary">Ver Guía de Laboratorio</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SIMULADOR SMTP -->
+        <section class="module-section" id="simulador">
+            <div class="section-tag">Interacción</div>
+            <h2>Simulador Interactivo SMTP</h2>
+            <p>Escribe comandos SMTP directamente en la terminal para "simular" una sesión de envío de correo manual (telnet).</p>
+            
+            <div class="terminal-container">
+                <div class="terminal-header">
+                    <div class="controls">
+                        <span class="close"></span>
+                        <span class="minimize"></span>
+                        <span class="expand"></span>
+                    </div>
+                    <div class="terminal-title">smtp-client@server-linux: ~</div>
+                </div>
+                <div class="terminal-body" id="terminal-output">
+                    <div class="line">220 smtp.tecnico.edu.pe ESMTP Postfix</div>
+                    <div class="line prompt">Esperando comando (HELO, MAIL FROM, RCPT TO, DATA, QUIT)...</div>
+                </div>
+                <div class="terminal-input-area">
+                    <span class="prompt-char">></span>
+                    <input type="text" id="terminal-input" placeholder="Escribe un comando..." autocomplete="off">
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <p>&copy; 2026 Plataforma Educativa de Redes - Universidad Técnica</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
